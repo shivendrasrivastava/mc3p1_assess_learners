@@ -64,7 +64,8 @@ class RTLearner(object):
             results.append(self.query_helper(points[i]))
 
         if self.verbose:
-            print 'Results: ' + str(results)
+            print 'Results length: ' + str(len(results))
+            #print 'Results: ' + str(results)
 
         # Convert and return.
         return np.array(results)
