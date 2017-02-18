@@ -6,6 +6,7 @@ import numpy as np
 import math
 import LinRegLearner as lrl
 import RTLearner as rtl
+import BagLearner as bl
 import sys
 
 if __name__=="__main__":
@@ -41,8 +42,10 @@ if __name__=="__main__":
     print testY.shape
 
     # create a learner and train it
-    learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner
-    learner = rtl.RTLearner(verbose = True)
+    #learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner
+    #learner = rtl.RTLearner(verbose = True)
+    #learner = rtl.RTLearner(verbose = True, leaf_size = 2)
+    learner = bl.BagLearner(learner = rtl.RTLearner, kwargs = {"leaf_size":1}, bags = 20, boost = False, verbose = False)
 
     # TODO test decision tree learner
     # TODO test bagging learner
