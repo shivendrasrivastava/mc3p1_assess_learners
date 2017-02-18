@@ -10,9 +10,13 @@ class RTLearner(object):
         self.dataX = None
         self.dataY = None
         self.verbose = verbose
+        # Helpers get called a lot more, so they need a second flag.
         self.helper_verbose = False
         self.leaf_size = leaf_size
+        # -1 is used as the enum for representing a leaf node.
         self.LEAF = -1
+        # When we initially get the tree, it won't be a matrix but a single list. Every 4 items are one row. It needs to be reshaped as so.
+        self.column_count = 4
 
     def author(self):
         return 'msalim7' # replace tb34 with your Georgia Tech username
@@ -53,7 +57,7 @@ class RTLearner(object):
         """
         if self.verbose:
             print "RTLearner query(...)"
-            #print self.random_tree
+            print self.random_tree
             print 'Random tree shape: ' + str(self.random_tree.shape)
             #print 'Points: ' + str(points)
             print 'Points shape: ' + str(points.shape)
@@ -105,14 +109,13 @@ class RTLearner(object):
         temp_tree =  self.build_tree_helper(dataX, dataY)
 
         # Figure out the reshape we need to do.
-        column_count = 4
-        row_count = temp_tree.shape[0]/column_count
+        row_count = temp_tree.shape[0] / self.column_count
         if self.verbose:
-            print "Column count: " + str(column_count)
+            print "Column count: " + str(self.column_count)
             print "Row count: " + str(row_count)
 
         # Reshape to 4xN where N is temp_tree.length/4.
-        return temp_tree.reshape(row_count, column_count)
+        return temp_tree.reshape(row_count, self.column_count)
 
     def build_tree_helper(self, dataX, dataY):
         # Each entry of this decision tree in matrix format: [Factor, Split value, Left index, Right index]
@@ -153,9 +156,14 @@ class RTLearner(object):
         ri = dataX[:,i] > split_value
         right_tree = self.build_tree_helper(dataX[ri], dataY[ri]) if True in ri else None
 
-        # Create root node.
-        start_of_right_tree = (len(left_tree) if left_tree != None else 1) + 1
+        # Create root node. We divide by 4 because we get a single list inside of a list of lists.
+        start_of_right_tree = (len(left_tree) / self.column_count if left_tree != None else 1) + 1
         root = np.array([i, split_value, 1, start_of_right_tree])
+
+##        if self.verbose: # TODO REMOVE
+##            print 'Root: ' + str(root)
+##            print 'Left: ' + str(left_tree)
+##            print 'Right: ' + str(right_tree)
 
         # Add left and right trees to root, then return the root.
         if left_tree != None:

@@ -35,6 +35,7 @@ class BagLearner(object):
             ri = np.randint(n, n)
             randomX = dataX[ri,:]
             randomY = dataY[ri,:]
+            # Add evidence.
             learner.addEvidence(randomX, randomY)
         
     def query(self,points):
@@ -43,7 +44,14 @@ class BagLearner(object):
         @param points: should be a numpy array with each row corresponding to a specific query.
         @returns the estimated values according to the saved model.
         """
-        return -1
+        # Get sum of all query results form all learners
+        total = sum(learner.query(points) for learner in learners)
+
+        # Get the mean of the results.
+        average = total / len(learners)
+
+        # Return unweighted average.
+        return average
 
 if __name__=="__main__":
     print "the secret clue is 'zzyzx'"
