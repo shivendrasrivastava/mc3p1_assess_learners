@@ -161,10 +161,6 @@ class RTLearner(object):
         ri = dataX[:,i] > split_value
         right_tree = self.build_tree_helper(dataX[ri,:], dataY[ri]) if True in ri else [self.LEAF, dataY.mean(), None, None]
 
-        # If there is no left or right tree, then treat the current root as a leaf.
-##        if left_tree == None and right_tree == None:
-##            return np.array([self.LEAF, dataY[0], None, None])
-
         # Create root node. We divide by 4 because we get a single list inside of a list of lists.
         start_of_right_tree = len(left_tree) / self.column_count + 1
         root = np.array([i, split_value, 1, start_of_right_tree])
