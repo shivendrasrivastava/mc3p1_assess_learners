@@ -101,6 +101,10 @@ class RTLearner(object):
                 # Go right.
                 i = i + self.random_tree[i][3]
 
+            # Are we about to go out of index?
+            if self.verbose and self.helper_verbose and i >= self.random_tree.shape[0]:
+                print "i = " + str(i) + ", tree shape = " + str(self.random_tree.shape)
+
         # Return (split) value of leaf.
         return self.random_tree[i][1]
 
@@ -128,9 +132,10 @@ class RTLearner(object):
         # 2. There is less than or equal to the given leaf size elements.
         # 3. All remaining Y values are the same.
         if dataX.shape[0] == 1 or dataX.shape[0] <= self.leaf_size or all(dataY[0] == y for y in dataY):
+            yMean = dataY.mean()
             if self.verbose and self.helper_verbose:
-                print "Leaf value: " + str(dataY[0])
-            return np.array([self.LEAF, dataY[0], None, None])
+                print "Leaf value: " + str(yMean)
+            return np.array([self.LEAF, yMean, None, None])
 
         # Determine random feature i to split on.
         i =  np.random.randint(dataX.shape[1])
@@ -150,20 +155,24 @@ class RTLearner(object):
 
         # Build left tree such that we pass it data that's less than or equal to the split value.
         li = dataX[:,i] <= split_value
-        left_tree = self.build_tree_helper(dataX[li,:], dataY[li]) if True in li else None
+        left_tree = self.build_tree_helper(dataX[li,:], dataY[li]) if True in li else [self.LEAF, dataY.mean(), None, None]
 
         # Build left tree such that we pass it data that's greater than the split value.
         ri = dataX[:,i] > split_value
-        right_tree = self.build_tree_helper(dataX[ri,:], dataY[ri]) if True in ri else None
+        right_tree = self.build_tree_helper(dataX[ri,:], dataY[ri]) if True in ri else [self.LEAF, dataY.mean(), None, None]
+
+        # If there is no left or right tree, then treat the current root as a leaf.
+##        if left_tree == None and right_tree == None:
+##            return np.array([self.LEAF, dataY[0], None, None])
 
         # Create root node. We divide by 4 because we get a single list inside of a list of lists.
-        start_of_right_tree = (len(left_tree) / self.column_count if left_tree != None else 1) + 1
+        start_of_right_tree = len(left_tree) / self.column_count + 1
         root = np.array([i, split_value, 1, start_of_right_tree])
 
-##        if self.verbose: # TODO REMOVE
-##            print 'Root: ' + str(root)
-##            print 'Left: ' + str(left_tree)
-##            print 'Right: ' + str(right_tree)
+        if self.verbose and self.helper_verbose:
+            print 'Root: ' + str(root)
+            print 'Left: ' + str(left_tree)
+            print 'Right: ' + str(right_tree)
 
         # Add left and right trees to root, then return the root.
         if left_tree != None:
