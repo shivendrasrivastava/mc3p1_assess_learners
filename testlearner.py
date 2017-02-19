@@ -9,6 +9,28 @@ import RTLearner as rtl
 import BagLearner as bl
 import sys
 
+def evaluate_samples(learner, trainX, trainY, testX, testY):
+    # evaluate in sample
+    predY = learner.query(trainX) # get the predictions
+    is_rmse = math.sqrt(((trainY - predY) ** 2).sum()/trainY.shape[0])
+    print
+    print "In sample results"
+    print "RMSE: ", is_rmse
+    isc = np.corrcoef(predY, y=trainY)
+    print "corr: ", isc[0,1]
+
+    # evaluate out of sample
+    predY = learner.query(testX) # get the predictions
+    os_rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
+    print
+    print "Out of sample results"
+    print "RMSE: ", os_rmse
+    osc = np.corrcoef(predY, y=testY)
+    print "corr: ", osc[0,1]
+
+    # Return error metric RMSE for graphing an overfit.
+    return (is_rmse, os_rmse)
+
 if __name__=="__main__":
 ##    if len(sys.argv) != 2:
 ##        print "Usage: python testlearner.py <filename>"
@@ -17,8 +39,8 @@ if __name__=="__main__":
     
     # TODO test other datasets! also test the correct with by passing in arguments!!!
     #file_path = './Data/Istanbul.csv' #sys.argv[1]
-    file_path = './Data/winequality-red.csv'
-    #file_path = './Data/winequality-white.csv'
+    #file_path = './Data/winequality-red.csv'
+    file_path = './Data/winequality-white.csv'
 
     inf = open(file_path) 
 
@@ -44,29 +66,30 @@ if __name__=="__main__":
     print testX.shape
     print testY.shape
 
-    # create a learner and train it
-    #learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner
-    learner = rtl.RTLearner(verbose = True)
-    #learner = rtl.RTLearner(verbose = True, leaf_size = 2)
-    #learner = bl.BagLearner(learner = rtl.RTLearner, kwargs = {"leaf_size":1}, bags = 20, boost = False, verbose = False)
+    # Build a comma separated result of Leaf Size, in sample RMSE, out of sample RMSE.
+    output = open('output-1.csv', 'w')
+    output.write('Leaf Size,In Sample RMSE,Out of Sample RMSE\n')
+    
+    # What leaf size does overfitting occur?
+    for i in range(1, 5001):
+        print 'Leaf size: ' + str(i)
+        # Create a learner and train it.
+        #learner = lrl.LinRegLearner(verbose = True) # create a LinRegLearner
+        #learner = rtl.RTLearner(verbose = True)
+        learner = rtl.RTLearner(verbose = False, leaf_size = i)
+        #learner = bl.BagLearner(learner = rtl.RTLearner, kwargs = {"leaf_size":1}, bags = 20, boost = False, verbose = False)
 
-    learner.addEvidence(trainX, trainY) # train it
-    print learner.author()
+        # Train the learner.
+        learner.addEvidence(trainX, trainY)
+        #print learner.author()
 
-    # evaluate in sample
-    predY = learner.query(trainX) # get the predictions
-    rmse = math.sqrt(((trainY - predY) ** 2).sum()/trainY.shape[0])
-    print
-    print "In sample results"
-    print "RMSE: ", rmse
-    c = np.corrcoef(predY, y=trainY)
-    print "corr: ", c[0,1]
+        # Test it and get error metrics.
+        is_rmse, os_rmse = evaluate_samples(learner, trainX, trainY, testX, testY)
 
-    # evaluate out of sample
-    predY = learner.query(testX) # get the predictions
-    rmse = math.sqrt(((testY - predY) ** 2).sum()/testY.shape[0])
-    print
-    print "Out of sample results"
-    print "RMSE: ", rmse
-    c = np.corrcoef(predY, y=testY)
-    print "corr: ", c[0,1]
+        # Append to output.
+        output.write(str(i) + ',' + str(is_rmse) + ',' + str(os_rmse) + '\n')
+
+    # Save output.
+    output.close()
+        
+
