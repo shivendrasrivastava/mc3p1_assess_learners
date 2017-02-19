@@ -80,7 +80,7 @@ class RTLearner(object):
             print "RTLearner query_helper(...)"
             
         # Start from row that represents "root" of the tree.
-        i = self.random_tree[0][0]
+        i = 0
 
         # While the current row is not a leaf.
         while self.random_tree[i][0] != -1:
@@ -150,11 +150,11 @@ class RTLearner(object):
 
         # Build left tree such that we pass it data that's less than or equal to the split value.
         li = dataX[:,i] <= split_value
-        left_tree = self.build_tree_helper(dataX[li], dataY[li]) if True in li else None
+        left_tree = self.build_tree_helper(dataX[li,:], dataY[li]) if True in li else None
 
         # Build left tree such that we pass it data that's greater than the split value.
         ri = dataX[:,i] > split_value
-        right_tree = self.build_tree_helper(dataX[ri], dataY[ri]) if True in ri else None
+        right_tree = self.build_tree_helper(dataX[ri,:], dataY[ri]) if True in ri else None
 
         # Create root node. We divide by 4 because we get a single list inside of a list of lists.
         start_of_right_tree = (len(left_tree) / self.column_count if left_tree != None else 1) + 1
