@@ -16,7 +16,10 @@ if __name__=="__main__":
 ##    inf = open(sys.argv[1])
     
     # TODO test other datasets! also test the correct with by passing in arguments!!!
-    file_path = './Data/Istanbul.csv' #sys.argv[1] 
+    #file_path = './Data/Istanbul.csv' #sys.argv[1]
+    file_path = './Data/winequality-red.csv'
+    #file_path = './Data/winequality-white.csv'
+
     inf = open(file_path) 
 
     data = None
@@ -47,9 +50,6 @@ if __name__=="__main__":
     #learner = rtl.RTLearner(verbose = True, leaf_size = 2)
     #learner = bl.BagLearner(learner = rtl.RTLearner, kwargs = {"leaf_size":1}, bags = 20, boost = False, verbose = False)
 
-    # TODO test decision tree learner
-    # TODO test bagging learner
-    
     learner.addEvidence(trainX, trainY) # train it
     print learner.author()
 
