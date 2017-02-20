@@ -59,18 +59,16 @@ def evaluate_samples(learner, trainX, trainY, testX, testY):
     # Return error metric RMSE for graphing an overfit.
     return (is_rmse, os_rmse)
 
-def problem_1():
-    file_path = './Data/winequality-white.csv'
-
+def problem_1(max_leaf_size, file_path, output_file):
     # Get data.
     trainX, trainY, testX, testY = get_data(file_path)
 
     # Build a comma separated result of Leaf Size, in sample RMSE, out of sample RMSE.
-    output = open('output-1.csv', 'w')
+    output = open(output_file + '.csv', 'w')
     output.write('Leaf Size,In Sample RMSE,Out of Sample RMSE\n')
     
     # What leaf size does overfitting occur?
-    for i in range(1, 5001):
+    for i in range(1, max_leaf_size + 1):
         print 'Leaf size: ' + str(i)
         # Create a learner and train it.
         learner = rtl.RTLearner(verbose = False, leaf_size = i)
@@ -88,21 +86,46 @@ def problem_1():
     # Save output.
     output.close()    
 
-def problem_2():
-    file_path = './Data/winequality-red.csv'
-
+def problem_2(max_bag_size, fixed_leaf_size, file_path, output_file):
     # Get data.
     trainX, trainY, testX, testY = get_data(file_path)
 
     # Build a comma separated result of Bag Size, in sample RMSE, out of sample RMSE.
-    output = open('output-2.csv', 'w')
+    output = open(output_file + '.csv', 'w')
     output.write('Bag Size,In Sample RMSE,Out of Sample RMSE\n')
     
     # What bag size does overfitting occur?
-    for i in range(1, 151):
+    for i in range(1, max_bag_size + 1):
         print 'Bag size: ' + str(i)
         # Create a learner and train it.
-        learner = bl.BagLearner(learner = rtl.RTLearner, kwargs = {"leaf_size":1}, bags = i, boost = False, verbose = False)
+        learner = bl.BagLearner(learner = rtl.RTLearner, kwargs = {"leaf_size":fixed_leaf_size}, bags = i, boost = False, verbose = False)
+
+        # Train the learner.
+        learner.addEvidence(trainX, trainY)
+        #print learner.author()
+
+        # Test it and get error metrics.
+        is_rmse, os_rmse = evaluate_samples(learner, trainX, trainY, testX, testY)
+
+        # Append to output.
+        output.write(str(i) + ',' + str(is_rmse) + ',' + str(os_rmse) + '\n')
+
+    # Save output.
+    output.close()   
+
+def problem_3(max_leaf_size, fixed_bag_size, file_path, output_file):
+    # Get data.
+    trainX, trainY, testX, testY = get_data(file_path)
+
+    # Build a comma separated result of Leaf Size, in sample RMSE, out of sample RMSE.
+    output = open(output_file + '.csv', 'w')
+    output.write('Leaf Size,In Sample RMSE,Out of Sample RMSE\n')
+    
+    # What leaf size does overfitting occur?
+    for i in range(1, max_leaf_size + 1):
+        print 'Leaf size: ' + str(i)
+        # Create a learner and train it.
+        learner = bl.BagLearner(learner = rtl.RTLearner, kwargs = {"leaf_size":i}, bags = fixed_bag_size, boost = False, verbose = False)
 
         # Train the learner.
         learner.addEvidence(trainX, trainY)
@@ -124,7 +147,15 @@ if __name__=="__main__":
 ##    inf = open(sys.argv[1])
     # TODO test other datasets! also test the correct with by passing in arguments!!!
     #file_path = sys.argv[1] #'./Data/Istanbul.csv' 
+
     
-    #problem_1()
-    problem_2()
-    #problem_3()
+    #problem_1(5000, './Data/winequality-white.csv', 'output-1-wine')
+    #problem_2(150, 1, './Data/winequality-red.csv', 'output-2-leaf-size-1-wine')
+    #problem_2(150, 5, './Data/winequality-red.csv', 'output-2-leaf-size-5-wine')
+    #problem_3(300, 20, './Data/winequality-white.csv', 'output-3-wine')
+
+    d = './Data/Istanbul.csv'
+    problem_1(5000, d, 'output-1-istanbul')
+    problem_2(150, 1, d, 'output-2-leaf-size-1-istanbul')
+    problem_2(150, 5, d, 'output-2-leaf-size-5-istanbul')
+    problem_3(300, 20, d, 'output-3-istanbul')
